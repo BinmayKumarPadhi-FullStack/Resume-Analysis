@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+
+.analyze-screen{
+  overflow: hidden;
+}
+
+.extracted-data-section{
+  height: 67vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.extracted-Job-data-section{
+  height: 96vh;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.scrollbar-color{
+  scrollbar-color: oklch(0.278 0.033 256.848) oklch(0.373 0.034 259.733);
+}

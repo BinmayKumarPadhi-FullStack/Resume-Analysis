@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect } from "react";
-import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 // import OpenAI from "openai";
 import pdfToText from "react-pdftotext";
@@ -11,6 +11,7 @@ import {
   uploadResumeSuccess,
 } from "../../store/resumeSlice";
 import { RootState } from "@/store";
+import Image from "next/image";
 // import axios from "axios";
 
 // Define the interfaces for the form data and parsed resume data
@@ -71,29 +72,27 @@ interface jobDetails {
 }
 
 export default function ResumeAnalysis() {
-  const { register, handleSubmit, setValue, control } = useForm<ResumeFormData>(
-    {
-      defaultValues: {
-        Experience: [
-          {
-            Company: "",
-            Location: "",
-            Position: "",
-            Duration: "",
-            Responsibilities: "",
-          },
-        ],
-        Projects: [
-          {
-            Name: "",
-            Description: "",
-          },
-        ],
-        Skills: [],
-        Education: { Institution: "", Degree: "", Duration: "" },
-      },
-    }
-  );
+  const { register, setValue, control } = useForm<ResumeFormData>({
+    defaultValues: {
+      Experience: [
+        {
+          Company: "",
+          Location: "",
+          Position: "",
+          Duration: "",
+          Responsibilities: "",
+        },
+      ],
+      Projects: [
+        {
+          Name: "",
+          Description: "",
+        },
+      ],
+      Skills: [],
+      Education: { Institution: "", Degree: "", Duration: "" },
+    },
+  });
 
   const { fields } = useFieldArray({
     control,
@@ -117,6 +116,7 @@ export default function ResumeAnalysis() {
   const [loadingMessage, setLoadingMessage] = useState(
     "Fetching employee details..."
   );
+  const [selectedFile, setSelectedFile] = useState("");
   // Create a reference to the job section
   // const jobsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -250,16 +250,16 @@ export default function ResumeAnalysis() {
     fetchJobs(page, jobsPerPage, selectedSkills);
   };
 
-  const onSubmit: SubmitHandler<ResumeFormData> = async (data) => {
-    const file = data.resume[0];
+  // const onSubmit: SubmitHandler<ResumeFormData> = async (data) => {
+  //   const file = data.resume[0];
 
-    try {
-      extractText(file);
-    } catch (error) {
-      console.error("Error uploading resume:", error);
-      dispatch(uploadResumeFailure());
-    }
-  };
+  //   try {
+  //     extractText(file);
+  //   } catch (error) {
+  //     console.error("Error uploading resume:", error);
+  //     dispatch(uploadResumeFailure());
+  //   }
+  // };
 
   // const resetData = () => {
   //   setExtractedData("");
@@ -289,52 +289,81 @@ export default function ResumeAnalysis() {
   //     Duration: "",
   //   });
   // };
+  const handleFileChange = async (event: any) => {
+    const file = event.target.files[0];
+    setSelectedFile(file.name);
+    try {
+      await extractText(file);
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      dispatch(uploadResumeFailure());
+    }
+  };
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white p-6 analyze-screen">
+    <div className="container">
       {/* Overlay Loader */}
       {loading && (
-        <div className="absolute inset-0 bg-gray-900/50 flex justify-center items-center z-50">
-          <div className="flex flex-col items-center bg-transparent p-6">
+        <div className="overlay">
+          <div className="loader-container">
             {/* Gradient Spinning Loader */}
             <div className="loader"></div>
-            <p className="text-lg font-semibold text-orange-500">
-              {loadingMessage}
-            </p>
+            <p className="loading-message">{loadingMessage}</p>
           </div>
         </div>
       )}
       {/* Left Side (Upload Form) */}
-      <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg mr-4">
-        <h1 className="text-2xl font-bold mb-4">AI Resume Analyzer</h1>
-        <form onSubmit={handleSubmit(onSubmit)} className="mb-4">
+      <div className="upload-form-container">
+        <h1 className="heading">AI Resume Analyzer</h1>
+        <form className="form">
+          {/* Container for the label and download icon */}
+          <label htmlFor="file-upload" className="file-upload-label">
+            {/* Download Icon inside the box */}
+            <Image
+              src="/images/download-1.png" // Path to your image in public directory
+              alt="download"
+              width={40} // Specify width
+              height={40} // Specify height
+            />
+
+            {/* File upload text */}
+            <div className="file-upload-text">
+              {selectedFile && selectedFile.length > 1
+                ? selectedFile
+                : "Upload your Resume"}
+            </div>
+          </label>
+
+          {/* Hidden file input */}
           <input
             type="file"
+            id="file-upload"
             {...register("resume", { required: true })}
-            className="mb-4 p-2 w-full rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-file"
             accept=".pdf"
+            onChange={handleFileChange} // Handle file selection
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-gradient-to-r from-orange-400 to-orange-600 text-white px-4 py-2 rounded-md hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-800 w-full"
-          >
-            {loading ? "Analyzing..." : "Upload Resume"}
-          </button>
+
+          {/* Submit button */}
+          {/* <div className="submit-section">
+            <button type="submit" disabled={loading} className="submit-button">
+              {loading ? "Analyzing..." : "Upload Resume"}
+            </button>
+          </div> */}
         </form>
 
         {/* Right Side (Parsed Data Form) */}
-        <div className="scrollbar-color flex-1 bg-gray-800 p-6 rounded-lg shadow-lg extracted-data-section">
-          <h1 className="text-2xl font-bold mb-4">Employee Details</h1>
+        <div className="parsed-data-container scrollbar-color">
+          <h1 className="heading">Employee Details</h1>
           {parsedData ? (
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div>
-                <label htmlFor="Name" className="block text-sm font-medium">
+            <form>
+              <div className="form-group">
+                <label htmlFor="Name" className="label">
                   Name
                 </label>
                 <input
                   {...register("Name", { required: true })}
                   id="Name"
-                  className="w-full rounded-xs p-2 mt-2 mb-4 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                   defaultValue={parsedData.Name}
                 />
               </div>
@@ -342,13 +371,11 @@ export default function ResumeAnalysis() {
               {/* Experience Fields */}
               {fields.map((exp, index) => (
                 <div key={exp.id}>
-                  <h3 className="font-semibold text-lg">
-                    Experience {index + 1}
-                  </h3>
-                  <div className="mb-2">
+                  <h3 className="experience-heading">Experience {index + 1}</h3>
+                  <div className="form-group">
                     <label
                       htmlFor={`Experience.${index}.Company`}
-                      className="block text-sm font-medium"
+                      className="label"
                     >
                       Company
                     </label>
@@ -357,30 +384,15 @@ export default function ResumeAnalysis() {
                         required: true,
                       })}
                       id={`Experience.${index}.Company`}
-                      className="w-full rounded-xs p-2 mt-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       defaultValue={exp.Company}
                     />
                   </div>
-                  {/* <div className="mb-2">
-                    <label
-                      htmlFor={`Experience.${index}.Position`}
-                      className="block text-sm font-medium"
-                    >
-                      Position
-                    </label>
-                    <input
-                      {...register(`Experience.${index}.Position`, {
-                        required: true,
-                      })}
-                      id={`Experience.${index}.Position`}
-                      className="w-full p-2 rounded-xs mt-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      defaultValue={exp.Position}
-                    />
-                  </div> */}
-                  <div className="mb-2">
+
+                  <div className="form-group">
                     <label
                       htmlFor={`Experience.${index}.Duration`}
-                      className="block text-sm font-medium"
+                      className="label"
                     >
                       Duration
                     </label>
@@ -389,59 +401,53 @@ export default function ResumeAnalysis() {
                         required: true,
                       })}
                       id={`Experience.${index}.Duration`}
-                      className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       defaultValue={exp.Duration}
                     />
                   </div>
-                  <div className="mb-2">
+                  <div className="form-group">
                     <label
                       htmlFor={`Experience.${index}.Responsibilities`}
-                      className="block text-sm font-medium"
+                      className="label"
                     >
                       Responsibilities
                     </label>
                     <textarea
                       {...register(`Experience.${index}.Responsibilities`)}
                       id={`Experience.${index}.Responsibilities`}
-                      className="w-full p-2 mt-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       defaultValue={exp.Responsibilities}
                     />
                   </div>
                 </div>
               ))}
+
               {/* Project Fields */}
               {projectFields.map((field, index) => (
-                <div key={field.id} className="mb-2">
-                  <div className="mb-2">
-                    <h3 className="font-semibold text-lg">
-                      Project {index + 1}
-                    </h3>
-                    <label
-                      htmlFor={`Projects.${index}.Name`}
-                      className="block text-sm font-medium"
-                    >
-                      Name
-                    </label>
-                    <input
-                      id={`Projects.${index}.Name`}
-                      defaultValue={field?.Name}
-                      className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register(`Projects.${index}.Name`, {
-                        required: true,
-                      })}
-                    />
-                  </div>
-                  <div className="mb-2">
+                <div key={field.id} className="form-group">
+                  <h3 className="project-heading">Project {index + 1}</h3>
+                  <label htmlFor={`Projects.${index}.Name`} className="label">
+                    Name
+                  </label>
+                  <input
+                    id={`Projects.${index}.Name`}
+                    defaultValue={field?.Name}
+                    className="input"
+                    {...register(`Projects.${index}.Name`, {
+                      required: true,
+                    })}
+                  />
+                  <div className="form-group">
                     <label
                       htmlFor={`Projects.${index}.Description`}
-                      className="block text-sm font-medium"
+                      className="label"
                     >
                       Description
                     </label>
                     <input
                       defaultValue={field?.Description}
                       id={`Projects.${index}.Name`}
-                      className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       {...register(`Projects.${index}.Description`, {
                         required: true,
                       })}
@@ -449,65 +455,57 @@ export default function ResumeAnalysis() {
                   </div>
                 </div>
               ))}
+
               {/* Skills */}
-              <div className="mb-4">
-                <label htmlFor="Skills" className="block text-sm font-medium">
+              <div className="form-group">
+                <label htmlFor="Skills" className="label">
                   Skills
                 </label>
                 <input
                   {...register("Skills", { required: true })}
                   id="Skills"
-                  className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                   defaultValue={parsedData.Skills.join(", ")}
                 />
               </div>
 
               {/* Education Fields */}
-              <div className="mb-4">
-                <label
-                  htmlFor="Education.Institution"
-                  className="block text-sm font-medium"
-                >
+              <div className="form-group">
+                <label htmlFor="Education.Institution" className="label">
                   Institution
                 </label>
                 <input
                   {...register("Education.Institution", { required: true })}
                   id="Education.Institution"
-                  className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                   defaultValue={parsedData.Education.Institution}
                 />
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="Education.Degree"
-                  className="block text-sm font-medium"
-                >
+              <div className="form-group">
+                <label htmlFor="Education.Degree" className="label">
                   Degree
                 </label>
                 <input
                   {...register("Education.Degree", { required: true })}
                   id="Education.Degree"
-                  className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                   defaultValue={parsedData.Education.Degree}
                 />
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="Education.Duration"
-                  className="block text-sm font-medium"
-                >
+              <div className="form-group">
+                <label htmlFor="Education.Duration" className="label">
                   Duration
                 </label>
                 <input
                   {...register("Education.Duration", { required: true })}
                   id="Education.Duration"
-                  className="w-full p-2 mt-2 rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                   defaultValue={parsedData.Education.Duration}
                 />
               </div>
             </form>
           ) : (
-            <p className="text-center">
+            <p className="message">
               {loading
                 ? "Loading Employee Details..."
                 : "Upload Resume to extract employee details"}
@@ -515,97 +513,77 @@ export default function ResumeAnalysis() {
           )}
         </div>
       </div>
-
       {/* Right Side (Job Listings) */}
-      <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg extracted-Job-data-section">
-        <h1 className="text-2xl font-bold mb-4 pl-6 pr-6 sticky top-0 bg-gray-900 z-10 shadow-md py-2">
-          Recommended Jobs
-        </h1>
-
+      <div className="job-listings-container">
+        <h1 className="heading">Recommended Jobs</h1>
         {/* Skills as buttons */}
         {parsedData ? (
-          <div>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {userSkillsSet?.map((skill, index) => {
-                const isSelected = selectedSkills.includes(skill);
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleSkillClick(skill)}
-                    className={`py-2 px-4 rounded-lg shadow-md transition-all ${
-                      isSelected
-                        ? "bg-orange-400 text-white"
-                        : "bg-orange-700 text-white"
-                    } hover:bg-orange-500`}
-                  >
-                    {skill}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Job Listings - Scrollable */}
-            <div
-              // ref={jobsSectionRef}
-              className="overflow-y-auto overflow-x-hidden h-[60vh] space-y-4 scrollbar-color"
-            >
-              {jobsData?.map((item, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="bg-gray-700 p-4 rounded-lg shadow-lg transition-transform transform hover:scale-102"
-                  >
-                    <h5 className="text-xl font-semibold text-white mb-2">
-                      {item.title}
-                    </h5>
-                    <h6 className="text-lg text-gray-400 mb-2">
-                      {item.company.display_name}
-                    </h6>
-                    <p className="text-sm text-gray-300 mb-2">
-                      {item.description}
-                    </p>
-                    <div className="flex justify-between text-sm text-gray-400">
-                      <span>{item.location.display_name}</span>
-                      <span>{item.contract_type}</span>
-                    </div>
-                    <a
-                      href={item.redirect_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-block text-blue-500 hover:underline"
-                    >
-                      Apply Here
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="py-2 px-4 bg-blue-500 text-white rounded-lg disabled:bg-gray-500"
-              >
-                Previous
-              </button>
-              <span className="mx-4 text-white">{currentPage}</span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={jobsData.length < jobsPerPage}
-                className="py-2 px-4 bg-blue-500 text-white rounded-lg disabled:bg-gray-500"
-              >
-                Next
-              </button>
-            </div>
+          <div className="skills-buttons">
+            {userSkillsSet?.map((skill, index) => {
+              const isSelected = selectedSkills.includes(skill);
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleSkillClick(skill)}
+                  className={`skill-button ${isSelected ? "selected" : ""}`}
+                >
+                  {skill}
+                </button>
+              );
+            })}
           </div>
         ) : (
-          <p className="text-center text-white">
+          <p className="message">
             {loading
               ? "Fetching Recommended Jobs..."
               : "Upload Resume to get Recommended Jobs"}
           </p>
+        )}
+
+        {/* Job Listings - Scrollable */}
+        <div className="job-listings-scroll scrollbar-color">
+          {jobsData?.map((item, index) => {
+            return (
+              <div key={index} className="job-listing">
+                <h5 className="job-title">{item.title}</h5>
+                <h6 className="company-name">{item.company.display_name}</h6>
+                <p className="job-description">{item.description}</p>
+                <div className="job-location">
+                  <span>Location: {item.location.display_name}</span>
+                  <span>Contract Type: {item.contract_type}</span>
+                </div>
+                <a
+                  href={item.redirect_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="apply-button"
+                >
+                  Apply Here
+                </a>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Pagination Controls */}
+        {jobsData.length > 0 && (
+          <div className="pagination-controls">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="pagination-button"
+            >
+              Previous
+            </button>
+            <span className="page-number">{currentPage}</span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={jobsData.length < jobsPerPage}
+              className="pagination-button"
+            >
+              Next
+            </button>
+          </div>
         )}
       </div>
     </div>

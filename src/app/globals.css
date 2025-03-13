@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
 
 :root {
   --background: #ffffff;
@@ -17,6 +17,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   overflow: hidden;
+  margin: 0;
 }
 
 .analyze-screen {
@@ -55,4 +56,268 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* General Styles */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #1a202c;
+  color: white;
+  padding: 24px;
+  position: relative;
+  gap: 12px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(26, 32, 44, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.loader {
+  /* Your loader animation */
+}
+
+.loading-message {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ff7f2a;
+}
+
+/* Form Styles */
+.upload-form-container,
+.parsed-data-container,
+.job-listings-container {
+  flex: 1;
+  background-color: #2d3748;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.parsed-data-container {
+  height: 44vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.upload-form-container,.job-listings-container{
+  height: 87vh;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.form {
+  margin-bottom: 16px;
+}
+
+.input-file {
+  display: none;
+}
+
+/* Style the custom label that acts as the file input button */
+.file-upload-label {
+  display: flex;
+  align-items: center;  /* Align items horizontally */
+  justify-content: center;  /* Center content horizontally */
+  padding: 20px;
+  background-color: #2d3748;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+  border: 2px dashed #aaa;
+  transition: all 0.3s;
+  text-align: center;
+  gap: 10px;  /* Space between the icon and the text */
+  width: 94%;
+  height: 15vh;
+}
+
+.file-upload-label:hover {
+  background-color: #2d3748;
+  border-color: #f6ad55;
+}
+
+/* Text inside the file upload box */
+.file-upload-text {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.submit-button {
+  background: linear-gradient(to right, #f6ad55, #f97316);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 25%;
+  height: 6vh;
+  margin-left: auto;
+  display: block;
+  margin-top: 12px;
+  border: none;
+}
+
+.submit-button:hover {
+  background: linear-gradient(to right, #fb923c, #f87171);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.input,
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+}
+
+.skills-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.skill-button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #e53e3e;
+  color: white;
+  transition: all 0.3s;
+  border: none;
+}
+
+.skill-button.selected {
+  background-color: #fd6e0d;
+}
+
+.skill-button:hover {
+  background-color: #fbbf24;
+}
+
+.message {
+  text-align: center;
+  color: white;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.pagination-button {
+  padding: 8px 16px;
+  background-color: #3182ce;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-left: 8px;
+}
+
+.pagination-button:disabled {
+  background-color: #4a5568;
+  cursor: not-allowed;
+}
+
+.page-number {
+  margin: 0 16px;
+  color: white;
+}
+
+/* Job Listings */
+.job-listings-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 60vh;
+  space-y: 16px;
+}
+
+.job-listing {
+  background-color: #4a5568;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  margin-top: 12px;
+}
+
+.job-listing:hover {
+  transform: scale(1.02);
+}
+
+.job-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.company-name {
+  font-size: 1rem;
+  color: #edf2f7;
+  margin-bottom: 8px;
+}
+
+.job-description {
+  font-size: 0.875rem;
+  color: #e2e8f0;
+}
+
+.job-location {
+  font-size: 0.875rem;
+  color: #edf2f7;
+  display: flex;
+  gap: 12px;
+}
+
+.apply-button {
+  margin-top: 16px;
+  display: inline-block;
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.apply-button:hover {
+  text-decoration: none;
+}
+
+
+.submit-section{
+  width: 100%;
+  display: inline-block;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 // import OpenAI from "openai";
@@ -118,7 +118,7 @@ export default function ResumeAnalysis() {
     "Fetching employee details..."
   );
   // Create a reference to the job section
-  const jobsSectionRef = useRef<HTMLDivElement>(null);
+  // const jobsSectionRef = useRef<HTMLDivElement>(null);
 
   const extractText = async (file: File) => {
     try {
@@ -131,7 +131,7 @@ export default function ResumeAnalysis() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoadingMessage("Still looking for opportunities...");
+      setLoadingMessage("Looking for Job Recommedations...");
     }, 6000); // After 3 seconds, change message
 
     // const secondTimer = setTimeout(() => {
@@ -229,12 +229,12 @@ export default function ResumeAnalysis() {
 
       setJobsData(data.results); // ✅ Use `data.results` if Adzuna API returns jobs under `results`
       // Scroll to the jobs section after the jobs are fetched
-      if (jobsSectionRef.current) {
-        jobsSectionRef.current.scrollIntoView({
-          behavior: "smooth", // Smooth scroll
-          block: "start", // Scroll to the top of the section
-        });
-      }
+      // if (jobsSectionRef.current) {
+      //   jobsSectionRef.current.scrollIntoView({
+      //     behavior: "smooth", // Smooth scroll
+      //     block: "start", // Scroll to the top of the section
+      //   });
+      // }
       dispatch(uploadResumeSuccess(""));
       return data.results;
     } catch (error) {
@@ -261,13 +261,42 @@ export default function ResumeAnalysis() {
     }
   };
 
+  // const resetData = () => {
+  //   setExtractedData("");
+  //   setParsedData({
+  //     Name: "",
+  //     Experience: [],
+  //     Skills: [],
+  //     Education: {
+  //       Institution: "",
+  //       Degree: "",
+  //       Duration: "",
+  //     },
+  //     Projects: [],
+  //   });
+  //   setJobsData([]);
+  //   setUserSkillsSet([]);
+  //   setSelectedSkills([]);
+  //   setCurrentPage(1);
+  //   setLoadingMessage("Fetching employee details...");
+  //   setValue("Name", "");
+  //   setValue("Experience", []);
+  //   setValue("Projects", []);
+  //   setValue("Skills", []);
+  //   setValue("Education", {
+  //     Institution: "",
+  //     Degree: "",
+  //     Duration: "",
+  //   });
+  // };
   return (
     <div className="flex min-h-screen bg-gray-900 text-white p-6 analyze-screen">
       {/* Overlay Loader */}
       {loading && (
-        <div className="absolute inset-0 bg-gray-900/50  flex justify-center items-center z-50">
+        <div className="absolute inset-0 bg-gray-900/50 flex justify-center items-center z-50">
           <div className="flex flex-col items-center bg-transparent p-6">
-            <div className="w-16 h-16 border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin mb-4"></div>
+            {/* Gradient Spinning Loader */}
+            <div className="loader"></div>
             <p className="text-lg font-semibold text-orange-500">
               {loadingMessage}
             </p>
@@ -282,12 +311,12 @@ export default function ResumeAnalysis() {
             type="file"
             {...register("resume", { required: true })}
             className="mb-4 p-2 w-full rounded-xs bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf"
           />
           <button
             type="submit"
             disabled={loading}
-            className="bg-gradient-to-r from-orange-400 to-orange-600 text-white px-4 py-2 rounded-md hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-700 w-full"
+            className="bg-gradient-to-r from-orange-400 to-orange-600 text-white px-4 py-2 rounded-md hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-800 w-full"
           >
             {loading ? "Analyzing..." : "Upload Resume"}
           </button>
@@ -332,7 +361,7 @@ export default function ResumeAnalysis() {
                       defaultValue={exp.Company}
                     />
                   </div>
-                  <div className="mb-2">
+                  {/* <div className="mb-2">
                     <label
                       htmlFor={`Experience.${index}.Position`}
                       className="block text-sm font-medium"
@@ -347,7 +376,7 @@ export default function ResumeAnalysis() {
                       className="w-full p-2 rounded-xs mt-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       defaultValue={exp.Position}
                     />
-                  </div>
+                  </div> */}
                   <div className="mb-2">
                     <label
                       htmlFor={`Experience.${index}.Duration`}
@@ -507,7 +536,7 @@ export default function ResumeAnalysis() {
                       isSelected
                         ? "bg-orange-400 text-white"
                         : "bg-orange-700 text-white"
-                    } hover:bg-blue-600`}
+                    } hover:bg-orange-500`}
                   >
                     {skill}
                   </button>
@@ -516,7 +545,10 @@ export default function ResumeAnalysis() {
             </div>
 
             {/* Job Listings - Scrollable */}
-            <div ref={jobsSectionRef} className="overflow-y-auto overflow-x-hidden h-[60vh] space-y-4 scrollbar-color">
+            <div
+              // ref={jobsSectionRef}
+              className="overflow-y-auto overflow-x-hidden h-[60vh] space-y-4 scrollbar-color"
+            >
               {jobsData?.map((item, index) => {
                 return (
                   <div

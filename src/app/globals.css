@@ -44,8 +44,8 @@ body {
   border: 16px solid #f3f3f3;
   border-radius: 50%;
   border-top: 16px solid rgb(237, 68, 6);
-  width: 70px;
-  height: 70px;
+  width: 40px;
+  height: 40px;
   animation: spin 2s linear infinite;
 }
 
@@ -61,7 +61,7 @@ body {
 /* General Styles */
 .container {
   display: flex;
-  min-height: 100vh;
+  min-height: 90vh;
   background-color: #1a202c;
   color: white;
   padding: 24px;
@@ -84,10 +84,6 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 24px;
-}
-
-.loader {
-  /* Your loader animation */
 }
 
 .loading-message {
@@ -113,7 +109,8 @@ body {
   overflow-x: hidden;
 }
 
-.upload-form-container,.job-listings-container{
+.upload-form-container,
+.job-listings-container {
   height: 87vh;
 }
 
@@ -134,8 +131,8 @@ body {
 /* Style the custom label that acts as the file input button */
 .file-upload-label {
   display: flex;
-  align-items: center;  /* Align items horizontally */
-  justify-content: center;  /* Center content horizontally */
+  align-items: center; /* Align items horizontally */
+  justify-content: center; /* Center content horizontally */
   padding: 20px;
   background-color: #2d3748;
   border-radius: 8px;
@@ -144,7 +141,7 @@ body {
   border: 2px dashed #aaa;
   transition: all 0.3s;
   text-align: center;
-  gap: 10px;  /* Space between the icon and the text */
+  gap: 10px; /* Space between the icon and the text */
   width: 94%;
   height: 15vh;
 }
@@ -159,6 +156,11 @@ body {
   color: white;
   font-size: 1rem;
   font-weight: bold;
+}
+
+.input-note{
+  font-size: 12px;
+  color: #e2e8f0ab;
 }
 
 .submit-button {
@@ -206,7 +208,17 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+  height: 10vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.skills-title-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .skill-button {
@@ -217,6 +229,7 @@ textarea {
   color: white;
   transition: all 0.3s;
   border: none;
+  cursor: pointer;
 }
 
 .skill-button.selected {
@@ -241,17 +254,19 @@ textarea {
 
 .pagination-button {
   padding: 8px 16px;
-  background-color: #3182ce;
+  background-color: #fd6e0d;
   color: white;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
   margin-left: 8px;
+  border: none;
 }
 
 .pagination-button:disabled {
   background-color: #4a5568;
   cursor: not-allowed;
+  border: none;
 }
 
 .page-number {
@@ -263,8 +278,8 @@ textarea {
 .job-listings-scroll {
   overflow-y: auto;
   overflow-x: hidden;
-  height: 60vh;
-  space-y: 16px;
+  height: 58vh;
+  /* space-y: 16px; */
 }
 
 .job-listing {
@@ -316,8 +331,183 @@ textarea {
   text-decoration: none;
 }
 
-
-.submit-section{
+.submit-section {
   width: 100%;
   display: inline-block;
+}
+
+/* Container for Missing Fields */
+.missing-fields-container {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ff4d4d;
+  background-color: #2d3748;
+  border-radius: 5px;
+}
+
+/* Title */
+.missing-fields-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d32f2f;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+/* Grid for Cards */
+.missing-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  gap: 10px;
+}
+
+/* Missing Field Card */
+.missing-field-card {
+  background-color: #ffcccc;
+  color: #900;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px;
+  font-weight: bold;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 800px) and (min-width: 451px) {
+  .container {
+    display: grid;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .upload-form-container,
+  .job-listings-container {
+    width: auto;
+  }
+  .file-upload-label {
+    padding: 10px;
+    height: 20vh;
+    min-height: 12vh; /* Ensure there is a minimum height */
+    gap: 8px;
+  }
+
+  .file-upload-text {
+    color: white;
+    font-size: 0.875rem; /* Smaller font size for small screens */
+    font-weight: bold;
+    text-align: center; /* Center the text inside */
+    word-wrap: break-word; /* Make sure text wraps if needed */
+    max-width: 100%; /* Ensure text doesn't overflow */
+    padding: 0 10px; /* Add some padding to the sides for better alignment */
+    width: 65%;
+  }
+
+  .job-listings-scroll {
+    height: 55vh;
+  }
+}
+
+@media (max-width: 450px) and (min-width: 400px) {
+  .container {
+    display: grid;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .file-upload-label {
+    padding: 10px;
+    height: 20vh;
+    min-height: 12vh; /* Ensure there is a minimum height */
+    gap: 8px;
+  }
+
+  .file-upload-text {
+    color: white;
+    font-size: 0.875rem; /* Smaller font size for small screens */
+    font-weight: bold;
+    text-align: center; /* Center the text inside */
+    word-wrap: break-word; /* Make sure text wraps if needed */
+    max-width: 100%; /* Ensure text doesn't overflow */
+    padding: 0 10px; /* Add some padding to the sides for better alignment */
+    width: 65%;
+  }
+
+  .upload-form-container,
+  .job-listings-container {
+    width: auto;
+  }
+
+  .job-listings-container {
+    height: 95vh;
+  }
+}
+
+@media (max-width: 400px) and (min-width: 350px) {
+  .container {
+    display: grid;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .file-upload-label {
+    padding: 10px;
+    height: 20vh;
+    min-height: 12vh; /* Ensure there is a minimum height */
+    gap: 8px;
+  }
+
+  .file-upload-text {
+    color: white;
+    font-size: 0.875rem; /* Smaller font size for small screens */
+    font-weight: bold;
+    text-align: center; /* Center the text inside */
+    word-wrap: break-word; /* Make sure text wraps if needed */
+    max-width: 100%; /* Ensure text doesn't overflow */
+    padding: 0 10px; /* Add some padding to the sides for better alignment */
+    width: 50%;
+  }
+
+  .upload-form-container,
+  .job-listings-container {
+    width: auto;
+  }
+
+  .job-listings-container {
+    height: 95vh;
+  }
+}
+
+@media (max-width: 349px) and (min-width: 320px) {
+  .container {
+    display: grid;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 12px;
+  }
+  .file-upload-label {
+    padding: 10px;
+    height: 20vh;
+    min-height: 12vh; /* Ensure there is a minimum height */
+    gap: 8px;
+  }
+
+  .file-upload-text {
+    color: white;
+    font-size: 0.875rem; /* Smaller font size for small screens */
+    font-weight: bold;
+    text-align: center; /* Center the text inside */
+    word-wrap: break-word; /* Make sure text wraps if needed */
+    max-width: 100%; /* Ensure text doesn't overflow */
+    padding: 0 10px; /* Add some padding to the sides for better alignment */
+    width: 50%;
+  }
+
+  .upload-form-container,
+  .job-listings-container {
+    width: auto;
+  }
+
+  .job-listings-container {
+    height: 95vh;
+  }
 }

@@ -26,6 +26,7 @@ interface Experience {
 interface Projects {
   Name: string;
   Description: string;
+  "Project Name": string;
 }
 
 interface Education {
@@ -117,6 +118,7 @@ export default function ResumeAnalysis() {
     "Fetching employee details..."
   );
   const [selectedFile, setSelectedFile] = useState("");
+  const [missingFields, setMissingFields] = useState<string[]>([]);
   // Create a reference to the job section
   // const jobsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -164,6 +166,7 @@ export default function ResumeAnalysis() {
             if (cleanedString) {
               try {
                 dispatch(uploadResumeSuccess(string));
+                resetData();
                 const data: ResumeData = JSON.parse(cleanedString);
                 setParsedData(data);
                 setValue("Name", data.Name);
@@ -173,6 +176,21 @@ export default function ResumeAnalysis() {
                 setValue("Education", data.Education);
                 // getJobListings(data, currentPage);
                 setUserSkillsSet(data?.Skills);
+                if (!data.Name || data.Name.length === 0)
+                  missingFields.push("Name");
+                if (!data.Experience || !Array.isArray(data.Experience))
+                  missingFields.push("Experience");
+                if (!data.Skills || data.Skills.length === 0)
+                  missingFields.push("Skills");
+                if (!data.Projects || data.Projects.length === 0)
+                  missingFields.push("Projects");
+                if (
+                  !data.Education ||
+                  typeof data.Experience !== "object" ||
+                  Object.keys(data.Education).length === 0
+                )
+                  missingFields.push("Education");
+                setMissingFields(missingFields);
                 const firstThreeSkills =
                   data?.Skills?.length > 2
                     ? data?.Skills.slice(0, 3)
@@ -211,6 +229,7 @@ export default function ResumeAnalysis() {
     skills: string[]
   ) => {
     dispatch(uploadResumeStart());
+    scrollToSection("job-listing");
     try {
       const response = await fetch(
         `/api/jobs?page=${page}&results_per_page=${jobsPerPage}&what=${encodeURIComponent(
@@ -246,8 +265,14 @@ export default function ResumeAnalysis() {
   };
 
   const handlePageChange = (page: number) => {
+    scrollToSection("job-listing");
     setCurrentPage(page);
     fetchJobs(page, jobsPerPage, selectedSkills);
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    element?.scrollIntoView({ behavior: "smooth" });
   };
 
   // const onSubmit: SubmitHandler<ResumeFormData> = async (data) => {
@@ -261,34 +286,35 @@ export default function ResumeAnalysis() {
   //   }
   // };
 
-  // const resetData = () => {
-  //   setExtractedData("");
-  //   setParsedData({
-  //     Name: "",
-  //     Experience: [],
-  //     Skills: [],
-  //     Education: {
-  //       Institution: "",
-  //       Degree: "",
-  //       Duration: "",
-  //     },
-  //     Projects: [],
-  //   });
-  //   setJobsData([]);
-  //   setUserSkillsSet([]);
-  //   setSelectedSkills([]);
-  //   setCurrentPage(1);
-  //   setLoadingMessage("Fetching employee details...");
-  //   setValue("Name", "");
-  //   setValue("Experience", []);
-  //   setValue("Projects", []);
-  //   setValue("Skills", []);
-  //   setValue("Education", {
-  //     Institution: "",
-  //     Degree: "",
-  //     Duration: "",
-  //   });
-  // };
+  const resetData = () => {
+    setMissingFields([]);
+    setExtractedData("");
+    setParsedData({
+      Name: "",
+      Experience: [],
+      Skills: [],
+      Education: {
+        Institution: "",
+        Degree: "",
+        Duration: "",
+      },
+      Projects: [],
+    });
+    setJobsData([]);
+    setUserSkillsSet([]);
+    setSelectedSkills([]);
+    setCurrentPage(1);
+    setLoadingMessage("Fetching employee details...");
+    setValue("Name", "");
+    setValue("Experience", []);
+    setValue("Projects", []);
+    setValue("Skills", []);
+    setValue("Education", {
+      Institution: "",
+      Degree: "",
+      Duration: "",
+    });
+  };
   const handleFileChange = async (event: any) => {
     const file = event.target.files[0];
     setSelectedFile(file.name);
@@ -332,7 +358,7 @@ export default function ResumeAnalysis() {
                 : "Upload your Resume"}
             </div>
           </label>
-
+          <p className="input-note">Note*: Currently accepts only PDF files</p>
           {/* Hidden file input */}
           <input
             type="file"
@@ -354,6 +380,22 @@ export default function ResumeAnalysis() {
         {/* Right Side (Parsed Data Form) */}
         <div className="parsed-data-container scrollbar-color">
           <h1 className="heading">Employee Details</h1>
+          {missingFields.length > 0 && (
+            <div>
+              {missingFields.length > 0 && (
+                <div className="missing-fields-container">
+                  <h3 className="missing-fields-title">⚠ Missing Fields</h3>
+                  <div className="missing-fields-grid">
+                    {missingFields.map((field) => (
+                      <div key={field} className="missing-field-card">
+                        ❌ {field} is missing
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {parsedData ? (
             <form>
               <div className="form-group">
@@ -427,11 +469,15 @@ export default function ResumeAnalysis() {
                 <div key={field.id} className="form-group">
                   <h3 className="project-heading">Project {index + 1}</h3>
                   <label htmlFor={`Projects.${index}.Name`} className="label">
-                    Name
+                    {field?.Name
+                      ? "Name"
+                      : field?.["Project Name"]
+                      ? "Project Name"
+                      : "Name"}
                   </label>
                   <input
                     id={`Projects.${index}.Name`}
-                    defaultValue={field?.Name}
+                    defaultValue={field?.Name || field?.["Project Name"] || ""}
                     className="input"
                     {...register(`Projects.${index}.Name`, {
                       required: true,
@@ -518,19 +564,22 @@ export default function ResumeAnalysis() {
         <h1 className="heading">Recommended Jobs</h1>
         {/* Skills as buttons */}
         {parsedData ? (
-          <div className="skills-buttons">
-            {userSkillsSet?.map((skill, index) => {
-              const isSelected = selectedSkills.includes(skill);
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleSkillClick(skill)}
-                  className={`skill-button ${isSelected ? "selected" : ""}`}
-                >
-                  {skill}
-                </button>
-              );
-            })}
+          <div className="skills-title-buttons">
+            <h5 className="job-title">Skills</h5>
+            <div className="skills-buttons scrollbar-color">
+              {userSkillsSet?.map((skill, index) => {
+                const isSelected = selectedSkills.includes(skill);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleSkillClick(skill)}
+                    className={`skill-button ${isSelected ? "selected" : ""}`}
+                  >
+                    {skill}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : (
           <p className="message">
@@ -544,13 +593,18 @@ export default function ResumeAnalysis() {
         <div className="job-listings-scroll scrollbar-color">
           {jobsData?.map((item, index) => {
             return (
-              <div key={index} className="job-listing">
+              <div id="job-listing" key={index} className="job-listing">
                 <h5 className="job-title">{item.title}</h5>
                 <h6 className="company-name">{item.company.display_name}</h6>
                 <p className="job-description">{item.description}</p>
                 <div className="job-location">
                   <span>Location: {item.location.display_name}</span>
-                  <span>Contract Type: {item.contract_type}</span>
+                  <span>
+                    Contract Type:{" "}
+                    {item?.contract_type && item?.contract_type.length > 0
+                      ? item?.contract_type
+                      : "N/A"}
+                  </span>
                 </div>
                 <a
                   href={item.redirect_url}

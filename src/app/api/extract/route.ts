@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       temperature: 0.3,
-      max_tokens: 1200,
+      max_tokens: 1700,
     });
 
     // ✅ Ensure the response is a valid JSON object before returning

@@ -122,7 +122,7 @@ export default function ResumeAnalysis() {
                 setMissingFields(missingFields);
                 const firstThreeSkills =
                   data?.skills?.length > 2
-                    ? data?.skills.slice(0, 3)
+                    ? data?.skills.slice(0, 1)
                     : data?.skills;
                 fetchJobs(currentPage, jobsPerPage, firstThreeSkills);
               } catch (error) {
@@ -333,12 +333,17 @@ export default function ResumeAnalysis() {
                         {/* Display each skill's job demand and market percentage */}
                         {parsedData.skills_details[index] && (
                           <>
-                            <p>
+                            <p className="job-demands">
                               <strong>Job Demand: </strong>
                               {
-                                parsedData.skills_details[index]
-                                  .job_demand_percentage
+                                <p className="job-demand-percenatge">
+                                  {
+                                    parsedData.skills_details[index]
+                                      .job_demand_percentage
+                                  }
+                                </p>
                               }
+                              %
                             </p>
                             <p>
                               <strong>Improvement Suggestions: </strong>

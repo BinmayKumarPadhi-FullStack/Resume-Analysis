@@ -72,7 +72,7 @@ body {
 .overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(26, 32, 44, 0.5);
+  background-color: rgba(26, 32, 44, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -414,7 +414,18 @@ textarea {
 
 .skill-item h3 {
   font-size: 1.3rem;
+  color: #fd6e0d;
+}
+
+.job-demands{
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.job-demand-percenatge{
   color: #76c7c0;
+  font-weight: 600;
 }
 
 .skill-details {

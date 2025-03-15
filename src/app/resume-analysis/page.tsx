@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-// import OpenAI from "openai";
 import pdfToText from "react-pdftotext";
 import {
   uploadResumeStart,
@@ -12,51 +11,30 @@ import {
 } from "../../store/resumeSlice";
 import { RootState } from "@/store";
 import Image from "next/image";
-// import axios from "axios";
 
 // Define the interfaces for the form data and parsed resume data
-interface Experience {
-  Company: string;
-  Location: string;
-  Position: string;
-  Duration: string;
-  Responsibilities: string;
-}
-
-interface Projects {
-  Name: string;
-  Description: string;
-  "Project Name": string;
-}
-
-interface Education {
-  Institution: string;
-  Degree: string;
-  Duration: string;
+interface SkillDetails {
+  job_demand_percentage: number;
+  recommendations: string;
+  skill: string;
 }
 
 interface ResumeData {
-  Name: string;
-  Experience: Experience[];
-  Skills: string[];
-  Education: Education;
-  Projects: Projects[];
+  name: string;
+  skills: string[];
+  insights: string;
+  resume_improvement_suggestions: string;
+  skills_details: SkillDetails[];
 }
 
 interface ResumeFormData {
   resume: FileList;
-  Name: string;
-  Experience: Experience[];
-  Skills: string[];
-  Education: Education;
-  Projects: Projects[];
+  name: string;
+  insights: string;
+  skills: string[];
+  resume_improvement_suggestions: string;
+  skills_details: SkillDetails[];
 }
-
-// interface JobsData {
-//   data: {
-//     results: [];
-//   };
-// }
 
 interface jobDetails {
   id: string;
@@ -73,38 +51,18 @@ interface jobDetails {
 }
 
 export default function ResumeAnalysis() {
-  const { register, setValue, control } = useForm<ResumeFormData>({
+  const { register } = useForm<ResumeFormData>({
     defaultValues: {
-      Experience: [
+      skills_details: [
         {
-          Company: "",
-          Location: "",
-          Position: "",
-          Duration: "",
-          Responsibilities: "",
+          job_demand_percentage: 0,
+          recommendations: "",
+          skill: "",
         },
       ],
-      Projects: [
-        {
-          Name: "",
-          Description: "",
-        },
-      ],
-      Skills: [],
-      Education: { Institution: "", Degree: "", Duration: "" },
+      skills: [],
     },
   });
-
-  const { fields } = useFieldArray({
-    control,
-    name: "Experience",
-  });
-
-  const { fields: projectFields } = useFieldArray({
-    control,
-    name: "Projects",
-  });
-
   const dispatch = useDispatch();
   const { loading } = useSelector((state: RootState) => state.resume);
   const [extractedData, setExtractedData] = useState<string | null>(null);
@@ -115,13 +73,10 @@ export default function ResumeAnalysis() {
   const [currentPage, setCurrentPage] = useState(1);
   const [jobsPerPage] = useState(10); // Show 10 jobs per page
   const [loadingMessage, setLoadingMessage] = useState(
-    "Fetching employee details..."
+    "Fetching resume overview..."
   );
   const [selectedFile, setSelectedFile] = useState("");
   const [missingFields, setMissingFields] = useState<string[]>([]);
-  // Create a reference to the job section
-  // const jobsSectionRef = useRef<HTMLDivElement>(null);
-
   const extractText = async (file: File) => {
     try {
       const text = await pdfToText(file); // Extract texts from the resume
@@ -135,14 +90,8 @@ export default function ResumeAnalysis() {
     const timer = setTimeout(() => {
       setLoadingMessage("Looking for Job Recommedations...");
     }, 6000); // After 3 seconds, change message
-
-    // const secondTimer = setTimeout(() => {
-    //   setLoadingMessage("Almost done...");
-    // }, 9000); // After 6 seconds, change message again
-
     return () => {
       clearTimeout(timer);
-      // clearTimeout(secondTimer);
     };
   }, []);
 
@@ -169,33 +118,12 @@ export default function ResumeAnalysis() {
                 resetData();
                 const data: ResumeData = JSON.parse(cleanedString);
                 setParsedData(data);
-                setValue("Name", data.Name);
-                setValue("Experience", data.Experience);
-                setValue("Projects", data.Projects);
-                setValue("Skills", data.Skills);
-                setValue("Education", data.Education);
-                // getJobListings(data, currentPage);
-                setUserSkillsSet(data?.Skills);
-                if (!data.Name || data.Name.length === 0)
-                  missingFields.push("Name");
-                if (!data.Experience || !Array.isArray(data.Experience))
-                  missingFields.push("Experience");
-                if (!data.Skills || data.Skills.length === 0)
-                  missingFields.push("Skills");
-                if (!data.Projects || data.Projects.length === 0)
-                  missingFields.push("Projects");
-                if (
-                  !data.Education ||
-                  typeof data.Experience !== "object" ||
-                  Object.keys(data.Education).length === 0
-                )
-                  missingFields.push("Education");
+                setUserSkillsSet(data?.skills);
                 setMissingFields(missingFields);
                 const firstThreeSkills =
-                  data?.Skills?.length > 2
-                    ? data?.Skills.slice(0, 3)
-                    : data?.Skills;
-                // const skills = firstThreeSkills.join(",");
+                  data?.skills?.length > 2
+                    ? data?.skills.slice(0, 3)
+                    : data?.skills;
                 fetchJobs(currentPage, jobsPerPage, firstThreeSkills);
               } catch (error) {
                 console.error("Error parsing JSON", error);
@@ -247,13 +175,6 @@ export default function ResumeAnalysis() {
       }
 
       setJobsData(data.results); // ✅ Use `data.results` if Adzuna API returns jobs under `results`
-      // Scroll to the jobs section after the jobs are fetched
-      // if (jobsSectionRef.current) {
-      //   jobsSectionRef.current.scrollIntoView({
-      //     behavior: "smooth", // Smooth scroll
-      //     block: "start", // Scroll to the top of the section
-      //   });
-      // }
       dispatch(uploadResumeSuccess(""));
       return data.results;
     } catch (error) {
@@ -275,45 +196,27 @@ export default function ResumeAnalysis() {
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // const onSubmit: SubmitHandler<ResumeFormData> = async (data) => {
-  //   const file = data.resume[0];
-
-  //   try {
-  //     extractText(file);
-  //   } catch (error) {
-  //     console.error("Error uploading resume:", error);
-  //     dispatch(uploadResumeFailure());
-  //   }
-  // };
-
   const resetData = () => {
     setMissingFields([]);
     setExtractedData("");
     setParsedData({
-      Name: "",
-      Experience: [],
-      Skills: [],
-      Education: {
-        Institution: "",
-        Degree: "",
-        Duration: "",
-      },
-      Projects: [],
+      name: "",
+      insights: "",
+      skills: [],
+      skills_details: [
+        {
+          job_demand_percentage: 0,
+          recommendations: "",
+          skill: "",
+        },
+      ],
+      resume_improvement_suggestions: "",
     });
     setJobsData([]);
     setUserSkillsSet([]);
     setSelectedSkills([]);
     setCurrentPage(1);
-    setLoadingMessage("Fetching employee details...");
-    setValue("Name", "");
-    setValue("Experience", []);
-    setValue("Projects", []);
-    setValue("Skills", []);
-    setValue("Education", {
-      Institution: "",
-      Degree: "",
-      Duration: "",
-    });
+    setLoadingMessage("Fetching Resume Overview...");
   };
   const handleFileChange = async (event: any) => {
     const file = event.target.files[0];
@@ -379,7 +282,7 @@ export default function ResumeAnalysis() {
 
         {/* Right Side (Parsed Data Form) */}
         <div className="parsed-data-container scrollbar-color">
-          <h1 className="heading">Employee Details</h1>
+          <h1 className="heading">Resume Overview</h1>
           {missingFields.length > 0 && (
             <div>
               {missingFields.length > 0 && (
@@ -397,164 +300,66 @@ export default function ResumeAnalysis() {
             </div>
           )}
           {parsedData ? (
-            <form>
-              <div className="form-group">
-                <label htmlFor="Name" className="label">
-                  Name
-                </label>
-                <input
-                  {...register("Name", { required: true })}
-                  id="Name"
-                  className="input"
-                  defaultValue={parsedData.Name}
-                />
+            <div className="resume-details-container">
+              <div className="section">
+                <h2 className="section-title">Name</h2>
+                <div className="data-value">{parsedData.name}</div>
               </div>
 
-              {/* Experience Fields */}
-              {fields.map((exp, index) => (
-                <div key={exp.id}>
-                  <h3 className="experience-heading">Experience {index + 1}</h3>
-                  <div className="form-group">
-                    <label
-                      htmlFor={`Experience.${index}.Company`}
-                      className="label"
-                    >
-                      Company
-                    </label>
-                    <input
-                      {...register(`Experience.${index}.Company`, {
-                        required: true,
-                      })}
-                      id={`Experience.${index}.Company`}
-                      className="input"
-                      defaultValue={exp.Company}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label
-                      htmlFor={`Experience.${index}.Duration`}
-                      className="label"
-                    >
-                      Duration
-                    </label>
-                    <input
-                      {...register(`Experience.${index}.Duration`, {
-                        required: true,
-                      })}
-                      id={`Experience.${index}.Duration`}
-                      className="input"
-                      defaultValue={exp.Duration}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label
-                      htmlFor={`Experience.${index}.Responsibilities`}
-                      className="label"
-                    >
-                      Responsibilities
-                    </label>
-                    <textarea
-                      {...register(`Experience.${index}.Responsibilities`)}
-                      id={`Experience.${index}.Responsibilities`}
-                      className="input"
-                      defaultValue={exp.Responsibilities}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              {/* Project Fields */}
-              {projectFields.map((field, index) => (
-                <div key={field.id} className="form-group">
-                  <h3 className="project-heading">Project {index + 1}</h3>
-                  <label htmlFor={`Projects.${index}.Name`} className="label">
-                    {field?.Name
-                      ? "Name"
-                      : field?.["Project Name"]
-                      ? "Project Name"
-                      : "Name"}
-                  </label>
-                  <input
-                    id={`Projects.${index}.Name`}
-                    defaultValue={field?.Name || field?.["Project Name"] || ""}
-                    className="input"
-                    {...register(`Projects.${index}.Name`, {
-                      required: true,
-                    })}
-                  />
-                  <div className="form-group">
-                    <label
-                      htmlFor={`Projects.${index}.Description`}
-                      className="label"
-                    >
-                      Description
-                    </label>
-                    <input
-                      defaultValue={field?.Description}
-                      id={`Projects.${index}.Name`}
-                      className="input"
-                      {...register(`Projects.${index}.Description`, {
-                        required: true,
-                      })}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              {/* Skills */}
-              <div className="form-group">
-                <label htmlFor="Skills" className="label">
-                  Skills
-                </label>
-                <input
-                  {...register("Skills", { required: true })}
-                  id="Skills"
-                  className="input"
-                  defaultValue={parsedData.Skills.join(", ")}
-                />
+              {/* Insights Section */}
+              <div className="section">
+                <h2 className="section-title">Insights</h2>
+                <p className="data-value">{parsedData.insights}</p>
               </div>
 
-              {/* Education Fields */}
-              <div className="form-group">
-                <label htmlFor="Education.Institution" className="label">
-                  Institution
-                </label>
-                <input
-                  {...register("Education.Institution", { required: true })}
-                  id="Education.Institution"
-                  className="input"
-                  defaultValue={parsedData.Education.Institution}
-                />
+              {/* Resume Improvement Suggestions */}
+              <div className="section">
+                <h2 className="section-title">
+                  Resume Improvement Suggestions
+                </h2>
+                <p className="data-value">
+                  {parsedData.resume_improvement_suggestions}
+                </p>
               </div>
-              <div className="form-group">
-                <label htmlFor="Education.Degree" className="label">
-                  Degree
-                </label>
-                <input
-                  {...register("Education.Degree", { required: true })}
-                  id="Education.Degree"
-                  className="input"
-                  defaultValue={parsedData.Education.Degree}
-                />
+
+              {/* Skills Section */}
+              <div className="section">
+                <h2 className="section-title">Skills</h2>
+                <ul className="skills-list">
+                  {parsedData.skills.map((skill, index) => (
+                    <li key={index} className="skill-item">
+                      <h3>{skill}</h3>
+                      <div className="skill-details">
+                        {/* Display each skill's job demand and market percentage */}
+                        {parsedData.skills_details[index] && (
+                          <>
+                            <p>
+                              <strong>Job Demand: </strong>
+                              {
+                                parsedData.skills_details[index]
+                                  .job_demand_percentage
+                              }
+                            </p>
+                            <p>
+                              <strong>Improvement Suggestions: </strong>
+                              {parsedData.skills_details[index].recommendations}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="form-group">
-                <label htmlFor="Education.Duration" className="label">
-                  Duration
-                </label>
-                <input
-                  {...register("Education.Duration", { required: true })}
-                  id="Education.Duration"
-                  className="input"
-                  defaultValue={parsedData.Education.Duration}
-                />
-              </div>
-            </form>
+
+              {/* Optional Section for Other Data */}
+              {/* If you have additional data like Experience, Projects, etc., you can display them here in a similar way */}
+            </div>
           ) : (
             <p className="message">
               {loading
-                ? "Loading Employee Details..."
-                : "Upload Resume to extract employee details"}
+                ? "Loading Resume Overview..."
+                : "Upload Resume to extract resume overview"}
             </p>
           )}
         </div>

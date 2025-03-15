@@ -104,9 +104,10 @@ body {
 }
 
 .parsed-data-container {
-  height: 44vh;
+  height: 52vh;
   overflow-y: auto;
   overflow-x: hidden;
+  padding: 0px !important;
 }
 
 .upload-form-container,
@@ -371,6 +372,61 @@ textarea {
   font-weight: bold;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
+
+
+
+/* CSS for Dark Mode and Styling for left side insights */
+.resume-details-container {
+  background-color: #2d3748;
+  color: #e0e0e0;
+  /* padding: 20px; */
+  border-radius: 8px;
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); */
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fd6e0d;
+  margin-bottom: 10px;
+}
+
+.data-value {
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.skills-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.skill-item {
+  background-color: oklch(0.373 0.034 259.733);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.skill-item h3 {
+  font-size: 1.3rem;
+  color: #76c7c0;
+}
+
+.skill-details {
+  font-size: 1rem;
+  color: #c7c7c7;
+}
+
+.skill-details p {
+  margin: 5px 0;
+}
+
+
 
 @media (max-width: 800px) and (min-width: 451px) {
   .container {

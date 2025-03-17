@@ -12,6 +12,18 @@
   }
 }
 
+/* Target autofill state for input fields */
+input:-webkit-autofill {
+  background-color: transparent !important; /* Ensure the background remains transparent or your desired color */
+  color: #fff !important; /* Optional: Change the text color to match your theme */
+}
+
+/* For Firefox (input auto-fill background color) */
+input:-moz-autofill {
+  background-color: transparent !important;
+  color: #fff !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -59,6 +71,20 @@ body {
 }
 
 /* General Styles */
+.header {
+  background-color: #2d3748;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
 .container {
   display: flex;
   min-height: 90vh;
@@ -159,9 +185,13 @@ body {
   font-weight: bold;
 }
 
-.input-note{
+.input-note {
   font-size: 12px;
   color: #e2e8f0ab;
+}
+
+.input-note span {
+  margin-left: 6px;
 }
 
 .submit-button {
@@ -251,6 +281,7 @@ textarea {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+  align-items: center;
 }
 
 .pagination-button {
@@ -280,11 +311,12 @@ textarea {
   overflow-y: auto;
   overflow-x: hidden;
   height: 58vh;
+  padding-right: 16px;
   /* space-y: 16px; */
 }
 
 .job-listing {
-  background-color: #4a5568;
+  background-color: #141e30;
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -305,18 +337,18 @@ textarea {
 
 .company-name {
   font-size: 1rem;
-  color: #edf2f7;
+  color: #abb3bb;
   margin-bottom: 8px;
 }
 
 .job-description {
   font-size: 0.875rem;
-  color: #e2e8f0;
+  color: #abb3bb;
 }
 
 .job-location {
   font-size: 0.875rem;
-  color: #edf2f7;
+  color: #abb3bb;
   display: flex;
   gap: 12px;
 }
@@ -373,8 +405,6 @@ textarea {
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-
-
 /* CSS for Dark Mode and Styling for left side insights */
 .resume-details-container {
   background-color: #2d3748;
@@ -403,10 +433,11 @@ textarea {
 .skills-list {
   list-style: none;
   padding-left: 0;
+  padding-right: 16px;
 }
 
 .skill-item {
-  background-color: oklch(0.373 0.034 259.733);
+  background-color: #141e30;
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 15px;
@@ -414,16 +445,15 @@ textarea {
 
 .skill-item h3 {
   font-size: 1.3rem;
-  color: #fd6e0d;
 }
 
-.job-demands{
+.job-demands {
   display: flex;
   gap: 2px;
   align-items: center;
 }
 
-.job-demand-percenatge{
+.job-demand-percenatge {
   color: #76c7c0;
   font-weight: 600;
 }
@@ -437,7 +467,144 @@ textarea {
   margin: 5px 0;
 }
 
+.created-date {
+  display: flex;
+  justify-content: space-between;
+}
 
+/* ERROR COMPONENT */
+.error-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.error-popup {
+  background-color: #141e30;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.error-popup button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #e53e3e;
+  color: white;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+/* FEEDBACK FORM CSS */
+/* The popup container */
+
+.feedback-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.feedback-popup-content {
+  background-color: #141e30;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.feedback-form-container {
+  width: 98%;
+}
+
+.feedback-img {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: #e53e3e 0px 2px 15px;
+  margin-right: 12px;
+}
+
+.feedback-img img:hover {
+  transform: scale(1.2); /* Slight zoom-in effect on hover */
+}
+
+/* Close button */
+.feedback-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Form input and textarea styling */
+.feedback-input,
+.feedback-textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #2d3748;
+  resize: none;
+  color: white;
+}
+
+.feedback-textarea {
+  height: 100px;
+}
+
+/* Submit button styling */
+.feedback-button {
+  background-color: #e53e3e;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.feedback-button-section {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.feedback-button:disabled {
+  background-color: #4a5568;
+  cursor: not-allowed;
+}
+
+/* Status message styling */
+.feedback-popup-status {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.feedback-popup-overlay.show {
+  visibility: visible;
+  opacity: 1;
+}
 
 @media (max-width: 800px) and (min-width: 451px) {
   .container {

@@ -11,6 +11,8 @@ import {
 } from "../../store/resumeSlice";
 import { RootState } from "@/store";
 import Image from "next/image";
+import ErrorPopup from "../components/ErrorPopup";
+import FeedbackForm from "../components/FeedbackForm";
 
 // Define the interfaces for the form data and parsed resume data
 interface SkillDetails {
@@ -48,6 +50,11 @@ interface jobDetails {
   location: {
     display_name: string;
   };
+  created: string;
+}
+
+interface JobData {
+  results: jobDetails[]; // Array of jobDetails
 }
 
 export default function ResumeAnalysis() {
@@ -85,6 +92,9 @@ export default function ResumeAnalysis() {
       console.error("Failed to extract text from PDF: ", error);
     }
   };
+  const [error, setError] = useState("");
+  const [isFeedbackButtonClicked, setIsFeedbackButtonClicked] = useState(false);
+  const [firstSkill, setFirstSkill] = useState<string[]>([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -94,6 +104,16 @@ export default function ResumeAnalysis() {
       clearTimeout(timer);
     };
   }, []);
+
+  // convert extracted data to json
+  const parseJSONSafely = (str: string) => {
+    try {
+      return JSON.parse(str);
+    } catch (error) {
+      console.error(error);
+      return null; // Return null if parsing fails
+    }
+  };
 
   useEffect(() => {
     if (extractedData) {
@@ -116,21 +136,30 @@ export default function ResumeAnalysis() {
               try {
                 dispatch(uploadResumeSuccess(string));
                 resetData();
-                const data: ResumeData = JSON.parse(cleanedString);
-                setParsedData(data);
-                setUserSkillsSet(data?.skills);
-                setMissingFields(missingFields);
-                const firstThreeSkills =
-                  data?.skills?.length > 2
-                    ? data?.skills.slice(0, 1)
-                    : data?.skills;
-                fetchJobs(currentPage, jobsPerPage, firstThreeSkills);
+                const isJsonData = parseJSONSafely(cleanedString);
+                if (isJsonData) {
+                  const data: ResumeData = JSON.parse(cleanedString);
+                  setParsedData(data);
+                  setUserSkillsSet(data?.skills);
+                  setMissingFields(missingFields);
+                  const firstThreeSkills =
+                    data?.skills?.length > 2
+                      ? data?.skills.slice(0, 1)
+                      : data?.skills;
+                  if (data?.skills?.length > 0) {
+                    setFirstSkill(data?.skills.slice(0, 1));
+                  }
+                  fetchJobs(currentPage, jobsPerPage, firstThreeSkills);
+                } else {
+                  setError("Something went wrong! Please try again later.");
+                }
               } catch (error) {
                 console.error("Error parsing JSON", error);
               }
             }
           }
         } catch (error) {
+          setError("Something went wrong! Please try again later.");
           console.error("Error during OpenAI API call:", error);
         }
       };
@@ -140,6 +169,7 @@ export default function ResumeAnalysis() {
   }, [extractedData]);
 
   const handleSkillClick = (skill: string) => {
+    setCurrentPage(1)
     const updatedSkills = [...selectedSkills];
     const skillIndex = updatedSkills.indexOf(skill);
     if (skillIndex === -1) {
@@ -148,7 +178,11 @@ export default function ResumeAnalysis() {
       updatedSkills.splice(skillIndex, 1);
     }
     setSelectedSkills(updatedSkills);
-    fetchJobs(currentPage, jobsPerPage, updatedSkills);
+    if (updatedSkills.length > 0) {
+      fetchJobs(currentPage, jobsPerPage, updatedSkills);
+    } else {
+      fetchJobs(currentPage, jobsPerPage, firstSkill);
+    }
   };
 
   const fetchJobs = async (
@@ -168,21 +202,31 @@ export default function ResumeAnalysis() {
       const data = await response.json();
 
       if (!Array.isArray(data.results)) {
+        setError("Something went wrong! Please try again later.");
         console.error("API response is not an array:", data);
         setJobsData([]); // ✅ Ensure it is always an array
         dispatch(uploadResumeSuccess(""));
         return [];
       }
-
-      setJobsData(data.results); // ✅ Use `data.results` if Adzuna API returns jobs under `results`
+      const sorted = sortedJobs(data);
+      setJobsData(sorted); // ✅ Use `data.results` if Adzuna API returns jobs under `results`
       dispatch(uploadResumeSuccess(""));
       return data.results;
     } catch (error) {
+      setError("Something went wrong! Please try again later.");
       console.error("Error fetching jobs:", error);
       setJobsData([]); // ✅ Ensure default empty array on error
       dispatch(uploadResumeSuccess(""));
       return [];
     }
+  };
+
+  const sortedJobs = (data: JobData): jobDetails[] => {
+    return data.results.sort((a: jobDetails, b: jobDetails) => {
+      const dateA = new Date(a.created);
+      const dateB = new Date(b.created);
+      return dateB.getTime() - dateA.getTime(); // Sorting in descending order
+    });
   };
 
   const handlePageChange = (page: number) => {
@@ -222,14 +266,64 @@ export default function ResumeAnalysis() {
     const file = event.target.files[0];
     setSelectedFile(file.name);
     try {
-      await extractText(file);
+      const fileExtension = file.name.split(".").pop();
+      if (fileExtension == "pdf") {
+        await extractText(file);
+      } else {
+        setSelectedFile("");
+        setError("Please upload PDF file only.");
+      }
     } catch (error) {
       console.error("Error uploading resume:", error);
       dispatch(uploadResumeFailure());
     }
   };
+
+  const openFeedbackForm = () => {
+    setIsFeedbackButtonClicked(true);
+  };
+  const closeFeedbackForm = () => {
+    setIsFeedbackButtonClicked(false);
+  };
+
+  // Format the date
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+
+    return new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  };
+
   return (
     <div className="container">
+      <div className="header">
+        <div className="feedback-img">
+          <Image
+            onClick={openFeedbackForm}
+            style={{ cursor: "pointer" }}
+            src="/images/feedback-icon.png" // Path to your image in public directory
+            alt="download"
+            width={20} // Specify width
+            height={20} // Specify height
+          />
+        </div>
+      </div>
+      {error.length > 0 && (
+        <ErrorPopup errorMessage={error} onClose={() => setError("")} />
+      )}
+      {isFeedbackButtonClicked && (
+        <div className="feedback-popup-overlay" onClick={closeFeedbackForm}>
+          <div
+            className="feedback-popup-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FeedbackForm closePopup={closeFeedbackForm} />
+          </div>
+        </div>
+      )}
       {/* Overlay Loader */}
       {loading && (
         <div className="overlay">
@@ -261,7 +355,19 @@ export default function ResumeAnalysis() {
                 : "Upload your Resume"}
             </div>
           </label>
-          <p className="input-note">Note*: Currently accepts only PDF files</p>
+          <p className="input-note">
+            Note*: Accepts only PDF file
+            <span>
+              <a
+                href={"https://www.ilovepdf.com/word_to_pdf"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="apply-button"
+              >
+                Convert to PDF
+              </a>
+            </span>
+          </p>
           {/* Hidden file input */}
           <input
             type="file"
@@ -336,12 +442,12 @@ export default function ResumeAnalysis() {
                             <p className="job-demands">
                               <strong>Job Demand: </strong>
                               {
-                                <p className="job-demand-percenatge">
+                                <span className="job-demand-percenatge">
                                   {
                                     parsedData.skills_details[index]
                                       .job_demand_percentage
                                   }
-                                </p>
+                                </span>
                               }
                               %
                             </p>
@@ -364,7 +470,7 @@ export default function ResumeAnalysis() {
             <p className="message">
               {loading
                 ? "Loading Resume Overview..."
-                : "Upload Resume to extract resume overview"}
+                : "Upload file to extract resume overview"}
             </p>
           )}
         </div>
@@ -395,10 +501,9 @@ export default function ResumeAnalysis() {
           <p className="message">
             {loading
               ? "Fetching Recommended Jobs..."
-              : "Upload Resume to get Recommended Jobs"}
+              : "Upload file to get Recommended Jobs"}
           </p>
         )}
-
         {/* Job Listings - Scrollable */}
         <div className="job-listings-scroll scrollbar-color">
           {jobsData?.map((item, index) => {
@@ -416,14 +521,21 @@ export default function ResumeAnalysis() {
                       : "N/A"}
                   </span>
                 </div>
-                <a
-                  href={item.redirect_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="apply-button"
-                >
-                  Apply Here
-                </a>
+                <div className="created-date">
+                  <a
+                    href={item.redirect_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="apply-button"
+                  >
+                    Apply Here
+                  </a>
+                  <p className="job-description">
+                    {item?.created
+                      ? formatDate(item.created)
+                      : "No Date Available"}
+                  </p>
+                </div>
               </div>
             );
           })}

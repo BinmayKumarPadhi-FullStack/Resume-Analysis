@@ -12,6 +12,7 @@ const ErrorPopup: React.FC<ErrorPopupProps> = ({ errorMessage, onClose }) => {
       <div className="error-popup">
         <h3>Error</h3>
         <p>{errorMessage}</p>
+        <p>Token limit exceeded</p>
         <button onClick={onClose}>Close</button>
       </div>
     </div>

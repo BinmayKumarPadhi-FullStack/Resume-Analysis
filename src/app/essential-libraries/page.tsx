@@ -382,7 +382,7 @@ loadPDF("sample.pdf");
         ],
       },
     ],
-  }
+  },
 ];
 
 interface ExpandableSectionProps {
@@ -395,7 +395,8 @@ function ExpandableSection({
   icon: Icon,
 }: ExpandableSectionProps) {
   //   const [isExpanded, setIsExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<boolean[]>();
+  const [installationCopied, setInstallationCopied] = useState<boolean[]>([]);
 
   // Create an array of expansion states for each category
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
@@ -404,14 +405,72 @@ function ExpandableSection({
 
   const toggleExpanded = (index: number) => {
     setExpandedStates((prev) =>
-        prev.map((state, i) => (i === index && index < prev.length ? !state : false))
-      );
+      prev.map((state, i) =>
+        i === index && index < prev.length ? !state : false
+      )
+    );
   };
 
-  const copyToClipboard = async (code: string) => {
+  const copyToClipboard = async (code: string, index: number) => {
     await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+
+    // Set only the value at the specified index to true, others to false
+    setCopied((prev) => {
+      // Ensure that prev is defined and has the right length
+      const safePrev =
+        prev && prev.length === librariesCategories[index]?.libraries?.length
+          ? prev
+          : Array(librariesCategories[index]?.libraries?.length).fill(false);
+
+      const updatedCopied = safePrev.map((state, i) =>
+        i === index ? true : false
+      );
+      return updatedCopied;
+    });
+
+    // Reset the copied state after 2 seconds
+    setTimeout(() => {
+      setCopied((prev) => {
+        const safePrev =
+          prev && prev.length === librariesCategories[index]?.libraries?.length
+            ? prev
+            : Array(librariesCategories[index]?.libraries?.length).fill(false);
+
+        const updatedCopied = safePrev.map(() => false); // Reset all to false
+        return updatedCopied;
+      });
+    }, 2000);
+  };
+
+  const copyToInstallationClipboard = async (code: string, index: number) => {
+    await navigator.clipboard.writeText(code);
+
+    // Set only the value at the specified index to true, others to false
+    setInstallationCopied((prev) => {
+      // Ensure that prev is defined and has the right length
+      const safePrev =
+        prev && prev.length === librariesCategories[index]?.libraries?.length
+          ? prev
+          : Array(librariesCategories[index]?.libraries?.length).fill(false);
+
+      const updatedCopied = safePrev.map((state, i) =>
+        i === index ? true : false
+      );
+      return updatedCopied;
+    });
+
+    // Reset the copied state after 2 seconds
+    setTimeout(() => {
+      setInstallationCopied((prev) => {
+        const safePrev =
+          prev && prev.length === librariesCategories[index]?.libraries?.length
+            ? prev
+            : Array(librariesCategories[index]?.libraries?.length).fill(false);
+
+        const updatedCopied = safePrev.map(() => false); // Reset all to false
+        return updatedCopied;
+      });
+    }, 2000);
   };
   return (
     <div className="expandable-section">
@@ -430,7 +489,9 @@ function ExpandableSection({
                     gap: "0.5rem",
                   }}
                 >
-                  {Icon && <BookOpen size={16} color="rgba(0, 123, 255, 0.8)"/>}
+                  {Icon && (
+                    <BookOpen size={16} color="rgba(0, 123, 255, 0.8)" />
+                  )}
                   <span>{library?.category}</span>
                 </div>
                 <ChevronDown
@@ -457,11 +518,14 @@ function ExpandableSection({
                     <span>jsx</span>
                     <button
                       onClick={() => {
-                        copyToClipboard(library.installation);
+                        copyToInstallationClipboard(
+                          library.installation,
+                          libraryIndex
+                        );
                       }}
                       className="code-copy-btn"
                     >
-                      {copied ? (
+                      {installationCopied?.[libraryIndex] ? (
                         <Check color="white" size={16} />
                       ) : (
                         <Copy color="white" size={16} />
@@ -484,11 +548,11 @@ function ExpandableSection({
                     <span>jsx</span>
                     <button
                       onClick={() => {
-                        copyToClipboard(library.code);
+                        copyToClipboard(library.code, libraryIndex);
                       }}
                       className="code-copy-btn"
                     >
-                      {copied ? (
+                      {copied?.[libraryIndex] ? (
                         <Check color="white" size={16} />
                       ) : (
                         <Copy color="white" size={16} />
@@ -552,8 +616,8 @@ export default function EssentialLibraries() {
       <div className="header">
         <div className="sidebar-logo-section">
           <Sidebar />
-          <Link className="home-link-logo" href={'/resume-analysis'}>
-          <h1 className="heading">Syntax Glow</h1>
+          <Link className="home-link-logo" href={"/resume-analysis"}>
+            <h1 className="heading">Syntax Glow</h1>
           </Link>
         </div>
         <div className="feedback-img">

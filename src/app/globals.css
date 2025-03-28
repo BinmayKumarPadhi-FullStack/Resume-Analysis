@@ -32,6 +32,10 @@ body {
   margin: 0;
 }
 
+.active {
+  background: linear-gradient(to right, #3b83f610, #a855f712, #ec489915);
+}
+
 .home-link-logo {
   text-decoration: none;
 }
@@ -186,9 +190,8 @@ body {
   font-weight: bold;
   margin: 0px;
   color: white;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.8),
-    /* Blue glow */ 0 0 20px rgba(168, 85, 247, 0.8),
-    /* Purple glow */ 0 0 30px rgba(236, 72, 153, 0.8); /* Pink glow */
+  /* text-shadow: 0 0 10px rgba(59, 130, 246, 0.8),
+    0 0 20px rgba(168, 85, 247, 0.8), 0 0 30px rgba(236, 72, 153, 0.8); */
 }
 
 .job-listing-heading {
@@ -338,6 +341,7 @@ textarea {
   transition: all 0.3s;
   border: none;
   cursor: pointer;
+  height: 5vh;
 }
 
 .skill-button.selected {
@@ -544,7 +548,7 @@ tech-button .message {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  height: 40vh;
+  height: calc(100vh - 400px);
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -556,6 +560,7 @@ tech-button .message {
   /* margin-bottom: 15px; */
   width: auto;
   border: 1px solid #00000010;
+  height: 10vh;
 }
 
 .skill-item:hover {
@@ -595,7 +600,11 @@ tech-button .message {
     rgb(12 34 74),
     rgb(91 86 211 / 17%)
   );
-  box-shadow: rgb(59 130 246 / 98%) 0px 3px 8px;
+  border: 1px solid transparent;
+  border-image: linear-gradient(to right, #3b82f6, #a855f7, #ec4899) 1;
+}
+.created-date:hover::before {
+  filter: brightness(1.2); /* Add a hover effect if desired */
 }
 
 /* ERROR COMPONENT */
@@ -641,12 +650,14 @@ tech-button .message {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2;
 }
 .feedback-popup-content {
   background-color: #141e30;
   padding: 20px;
   border-radius: 8px;
   text-align: left;
+  color: white;
 }
 
 .feedback-form-container {
@@ -742,7 +753,8 @@ tech-button .message {
 .dropdown-selected {
   background-color: #141e30; /* Dark background */
   color: #e0e0e0; /* Light text */
-  border: 1px solid rgb(59 130 246 / 98%); /* Light border */
+  border: 1px solid transparent; /* Needs a border to apply the gradient */
+  border-image: linear-gradient(to right, #3b82f6, #a855f7, #ec4899) 1;
   border-radius: 4px; /* Rounded corners */
   padding: 10px 15px;
   font-size: 16px;
@@ -1183,6 +1195,9 @@ tech-button .message {
   .header {
     background: #1e1e1e;
   }
+  .form {
+    width: auto;
+  }
   .container {
     display: grid;
     height: 100vh;
@@ -1291,6 +1306,9 @@ tech-button .message {
     overflow-y: auto;
     overflow-x: hidden;
   }
+  .form {
+    width: auto;
+  }
   .file-upload-label {
     padding: 10px;
     height: 20vh;
@@ -1392,6 +1410,9 @@ tech-button .message {
   .header {
     padding: 10px 25px;
     background: #1e1e1e;
+  }
+  .form {
+    width: auto;
   }
   .container {
     display: grid;

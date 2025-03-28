@@ -207,15 +207,21 @@ export default function ResumeAnalysis() {
                 } else {
                   setError("Something went wrong! Please try again later.");
                   setIsDataRecieved(false);
+                  dispatch(uploadResumeFailure());
+                  setSelectedFile('');
                 }
               } catch (error) {
+                dispatch(uploadResumeFailure());
                 setIsDataRecieved(false);
+                setSelectedFile('');
                 console.error("Error parsing JSON", error);
               }
             }
           }
         } catch (error) {
           setIsDataRecieved(false);
+          dispatch(uploadResumeFailure());
+          setSelectedFile('');
           setError("Something went wrong! Please try again later.");
           console.error("Error during OpenAI API call:", error);
         }

@@ -1,11 +1,11 @@
 import { AlignJustify, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef } from "react";
-
+import { usePathname } from "next/navigation";
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const sidebarRef = useRef<HTMLDivElement | null>(null); // Reference to the sidebar container
-
+  const pathname = usePathname(); // Get current route
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -44,10 +44,10 @@ const Sidebar: React.FC = () => {
       {/* Sidebar */}
       <div ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
         <ul>
-          <li>
+          <li className={pathname === "/resume-analysis" ? "active" : ""}>
             <Link href="/resume-analysis">Home</Link>
           </li>
-          <li>
+          <li className={pathname === "/essential-libraries" ? "active" : ""}>
             <Link href="/essential-libraries">Essential Libraries</Link>
           </li>
         </ul>

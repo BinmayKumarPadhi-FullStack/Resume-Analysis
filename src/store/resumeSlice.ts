@@ -23,7 +23,6 @@ const resumeSlice = createSlice({
         uploadResumeSuccess: (state, action: PayloadAction<string>) => {
             state.loading = false;
             state.analysisResult = action.payload;
-            console.log(state.analysisResult);
         },
         uploadResumeFailure: (state) => {
             state.loading = false;

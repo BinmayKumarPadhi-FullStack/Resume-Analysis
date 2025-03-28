@@ -12,15 +12,10 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Here, you can log the data or perform any other operations
-    console.log("Received feedback:", { name, email, message });
-
     // Respond with a success message
     return NextResponse.json({ status: "success", message: "Feedback received" });
   } catch (error: unknown) {
     const e = error as Error;
-    console.error("Error processing feedback:", e.message);
     return NextResponse.json({ status: "error", message: e.message }, { status: 500 });
   }
 }
